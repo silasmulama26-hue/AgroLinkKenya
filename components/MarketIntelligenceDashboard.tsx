@@ -123,7 +123,7 @@ export default function MarketIntelligenceDashboard({ farmerId, county, preferre
         and 1 specific recommendation for a farmer (e.g., when to sell). 
         Keep it very practical and localized. Language: ${preferredLang === 'sw' ? 'Swahili' : 'English'}.`,
       });
-      setAiInsight(response.text);
+      setAiInsight(response.text ?? (preferredLang === 'sw' ? "Hatuwezi kupata uchambuzi kwa sasa." : "Unable to generate analysis right now."));
     } catch (err) {
       console.error(err);
       setAiInsight(preferredLang === 'sw' ? "Hatuwezi kupata uchambuzi kwa sasa." : "Unable to generate analysis right now.");
