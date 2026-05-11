@@ -1,0 +1,8 @@
+{
+  "name": "Remix: AgroLink",
+  "description": "An AI agricultural advisor serving farmers across Kenya with localized, personalized advice.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
