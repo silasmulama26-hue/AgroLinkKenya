@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Menu, Home, TrendingUp, ThermometerSun, Camera, Truck, Book, Settings, User } from 'lucide-react';
+import { X, Menu, Home, TrendingUp, ThermometerSun, Camera, Truck, Book, MessageCircle, User } from 'lucide-react';
 
 interface NavItem {
   id: string;
@@ -30,6 +30,7 @@ export default function HamburgerNav({
     { id: "scan", label: t.scan, icon: Camera },
     { id: "logistics", label: t.logistics, icon: Truck },
     { id: "library", label: t.resourceLibrary, icon: Book },
+    { id: "advisor", label: t.advisor, icon: MessageCircle },
     { id: "profile", label: t.profileSettings, icon: User },
   ];
 
