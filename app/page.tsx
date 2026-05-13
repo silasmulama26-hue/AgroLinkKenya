@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { 
   Sprout, 
   Camera, 
@@ -52,12 +53,13 @@ import HamburgerNav from "@/components/navigation/HamburgerNav";
 import { KENYA_REGIONS } from "@/lib/regions";
 import { isSupabaseConfigured, getSupabase } from "@/lib/supabase";
 
-type PendingAction = {
-  id: string;
-  type: 'REGISTER_CROP' | 'UPDATE_PROFILE';
-  payload: any;
-  timestamp: number;
-};
+// DISABLED: Offline queue feature removed for stability
+// type PendingAction = {
+//   id: string;
+//   type: 'REGISTER_CROP' | 'UPDATE_PROFILE';
+//   payload: any;
+//   timestamp: number;
+// };
 
 const translations = {
   en: {
@@ -352,16 +354,32 @@ const notificationsDataMap = {
 const generateId = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
 export default function AgriLinkDashboard() {
-  const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
-  const [offlineQueue, setOfflineQueue] = useState<PendingAction[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('agrilink_offline_queue');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
-  const [isSyncing, setIsSyncing] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  // DISABLED: Offline state and queue removed for stability
+  // const [isOffline, setIsOffline] = useState(typeof window !== 'undefined' ? !navigator.onLine : false);
+  // const [offlineQueue, setOfflineQueue] = useState<PendingAction[]>(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const saved = localStorage.getItem('agrilink_offline_queue');
+  //     return saved ? JSON.parse(saved) : [];
+  //   }
+  //   return [];
+  // });
+  // const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  
+  // Update activeTab based on current pathname
+  useEffect(() => {
+    if (pathname === '/') setActiveTab('home');
+    else if (pathname.startsWith('/crops')) setActiveTab('inventory');
+    else if (pathname.startsWith('/market')) setActiveTab('market');
+    else if (pathname.startsWith('/weather')) setActiveTab('weather');
+    else if (pathname.startsWith('/ai/analyze')) setActiveTab('scan');
+    else if (pathname.startsWith('/logistics')) setActiveTab('logistics');
+    else if (pathname.startsWith('/library')) setActiveTab('library');
+    else if (pathname.startsWith('/profile')) setActiveTab('profile');
+    else setActiveTab('home');
+  }, [pathname]);
   const [preferredLang, setPreferredLang] = useState<"en" | "sw">("sw");
   const t = translations[preferredLang];
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
@@ -399,34 +417,35 @@ export default function AgriLinkDashboard() {
     return '🌱';
   };
 
-  const syncOfflineData = React.useCallback(async () => {
-    if (offlineQueue.length === 0) return;
-    setIsSyncing(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log("Syncing actions:", offlineQueue);
-    setOfflineQueue([]);
-    setIsSyncing(false);
-  }, [offlineQueue]);
+  // DISABLED: Offline sync functions removed for stability
+  // const syncOfflineData = React.useCallback(async () => {
+  //   if (offlineQueue.length === 0) return;
+  //   setIsSyncing(true);
+  //   await new Promise(resolve => setTimeout(resolve, 2000));
+  //   console.log("Syncing actions:", offlineQueue);
+  //   setOfflineQueue([]);
+  //   setIsSyncing(false);
+  // }, [offlineQueue]);
+  //
+  // const queueAction = React.useCallback((action: Omit<PendingAction, 'id' | 'timestamp'>) => {
+  //   const newAction: PendingAction = {
+  //     ...action,
+  //     id: generateId(),
+  //     timestamp: Date.now()
+  //   };
+  //   setOfflineQueue(prev => [...prev, newAction]);
+  // }, []);
 
-  const queueAction = React.useCallback((action: Omit<PendingAction, 'id' | 'timestamp'>) => {
-    const newAction: PendingAction = {
-      ...action,
-      id: generateId(),
-      timestamp: Date.now()
-    };
-    setOfflineQueue(prev => [...prev, newAction]);
-  }, []);
-
-  // Sync Trigger
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('agrilink_offline_queue', JSON.stringify(offlineQueue, (_, v) => typeof v === 'bigint' ? v.toString() : v));
-    }
-    if (!isOffline && offlineQueue.length > 0 && !isSyncing) {
-      const timer = setTimeout(() => syncOfflineData(), 0);
-      return () => clearTimeout(timer);
-    }
-  }, [offlineQueue, isOffline, isSyncing, syncOfflineData]);
+  // DISABLED: Offline sync trigger removed for stability
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     localStorage.setItem('agrilink_offline_queue', JSON.stringify(offlineQueue, (_, v) => typeof v === 'bigint' ? v.toString() : v));
+  //   }
+  //   if (!isOffline && offlineQueue.length > 0 && !isSyncing) {
+  //     const timer = setTimeout(() => syncOfflineData(), 0);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [offlineQueue, isOffline, isSyncing, syncOfflineData]);
 
   const handleRegisterCrop = (cropData: any) => {
     const newCrop = {
@@ -448,12 +467,13 @@ export default function AgriLinkDashboard() {
       crops: [newCrop, ...prev.crops]
     }));
 
-    if (isOffline) {
-      queueAction({ type: 'REGISTER_CROP', payload: newCrop });
-    } else {
+    // DISABLED: Offline queue removed for stability
+    // if (isOffline) {
+    //   queueAction({ type: 'REGISTER_CROP', payload: newCrop });
+    // } else {
       // In a real app, call API here. For now, we simulate success.
       console.log("Crop registered online");
-    }
+    // }
 
     setShowRegistrationForm(false);
   };
@@ -479,7 +499,9 @@ export default function AgriLinkDashboard() {
     setFarmer(updatedFarmer);
     
     // In a real app, update profile in DB here
-    if (!isOffline && isSupabaseConfigured()) {
+    // DISABLED: Offline checks removed for stability
+    // if (!isOffline && isSupabaseConfigured()) {
+    if (isSupabaseConfigured()) {
       const supabase = getSupabase();
       supabase.from('profiles').update({
         full_name: `${firstName} ${lastName}`,
@@ -488,9 +510,9 @@ export default function AgriLinkDashboard() {
       }).eq('id', user?.id);
     }
     
-    if (isOffline) {
-      queueAction({ type: 'UPDATE_PROFILE', payload: updatedFarmer });
-    }
+    // if (isOffline) {
+    //   queueAction({ type: 'UPDATE_PROFILE', payload: updatedFarmer });
+    // }
 
     // Success feedback (could be a toast in a bigger app)
     alert(t.profileUpdated);
@@ -713,15 +735,16 @@ export default function AgriLinkDashboard() {
     setIsUpdatingCrop(id);
 
     try {
-      if (isOffline) {
-        queueAction({ type: 'UPDATE_PROFILE', payload: { id, trackMarket: newState } });
-      } else {
+      // DISABLED: Offline queue removed for stability
+      // if (isOffline) {
+      //   queueAction({ type: 'UPDATE_PROFILE', payload: { id, trackMarket: newState } });
+      // } else {
         await fetch('/api/crops', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, trackMarket: newState })
         });
-      }
+      // }
     } catch (e) {
       console.error("Toggle failed", e);
       // Revert if failed
@@ -736,15 +759,16 @@ export default function AgriLinkDashboard() {
     setIsUpdatingCrop(id);
 
     try {
-      if (isOffline) {
-        queueAction({ type: 'UPDATE_PROFILE', payload: { id, stage } });
-      } else {
+      // DISABLED: Offline queue removed for stability
+      // if (isOffline) {
+      //   queueAction({ type: 'UPDATE_PROFILE', payload: { id, stage } });
+      // } else {
         await fetch('/api/crops', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, stage })
         });
-      }
+      // }
     } catch (e) {
       console.error("Stage update failed", e);
     } finally {
@@ -752,24 +776,24 @@ export default function AgriLinkDashboard() {
     }
   };
 
-  // Simulate PWA offline detection
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-    
-    // Check initial state
-    if (typeof window !== "undefined") {
-      window.addEventListener("online", handleOnline);
-      window.addEventListener("offline", handleOffline);
-    }
-
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("online", handleOnline);
-        window.removeEventListener("offline", handleOffline);
-      }
-    };
-  }, []);
+  // DISABLED: Offline event listeners removed for stability
+  // useEffect(() => {
+  //   const handleOnline = () => setIsOffline(false);
+  //   const handleOffline = () => setIsOffline(true);
+  //   
+  //   // Check initial state
+  //   if (typeof window !== "undefined") {
+  //     window.addEventListener("online", handleOnline);
+  //     window.addEventListener("offline", handleOffline);
+  //   }
+  //
+  //   return () => {
+  //     if (typeof window !== "undefined") {
+  //       window.removeEventListener("online", handleOnline);
+  //       window.removeEventListener("offline", handleOffline);
+  //     }
+  //   };
+  // }, []);
 
   const renderHome = () => (
     <div className="p-4 md:p-10 flex-1 overflow-x-hidden animate-in fade-in zoom-in-95 duration-300 space-y-6 md:space-y-8">
@@ -783,20 +807,19 @@ export default function AgriLinkDashboard() {
             </h1>
             <p className="text-[11px] md:text-sm text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-wider mt-0.5">{farmer.county} • {farmer.subCounty}</p>
           </div>
-          {!isOffline && (
-            <div className="flex flex-col items-end gap-1.5">
-                 <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2.5 py-1 rounded-full text-[9px] font-black border border-blue-100 dark:border-blue-800 flex items-center gap-1 animate-pulse">
-                    <CloudRain size={10} /> {preferredLang === 'sw' ? 'Mvua' : 'Rain'}
-                 </div>
-            </div>
-          )}
+          {/* DISABLED: Offline indicator removed for stability */}
+          <div className="flex flex-col items-end gap-1.5">
+               <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-2.5 py-1 rounded-full text-[9px] font-black border border-blue-100 dark:border-blue-800 flex items-center gap-1 animate-pulse">
+                  <CloudRain size={10} /> {preferredLang === 'sw' ? 'Mvua' : 'Rain'}
+               </div>
+          </div>
         </div>
       </section>
 
       {/* Quick Actions Section */}
       <section className="grid grid-cols-2 gap-3 px-1">
         <button 
-          onClick={() => setActiveTab('scan')} 
+          onClick={() => router.push('/ai/analyze')} 
           className="bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-center gap-3 active:scale-95 transition-all"
         >
           <div className="w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-xl flex items-center justify-center text-green-600">
@@ -808,7 +831,7 @@ export default function AgriLinkDashboard() {
           </div>
         </button>
         <button 
-          onClick={() => setActiveTab('inventory')} 
+          onClick={() => router.push('/crops')} 
           className="bg-white dark:bg-neutral-900 p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-center gap-3 active:scale-95 transition-all"
         >
           <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600">
@@ -825,7 +848,7 @@ export default function AgriLinkDashboard() {
       <section className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{t.myCrops}</h3>
-          <button onClick={() => setActiveTab('inventory')} className="text-[10px] font-black text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md">{t.viewAll}</button>
+          <button onClick={() => router.push('/crops')} className="text-[10px] font-black text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-md">{t.viewAll}</button>
         </div>
         
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 px-1 -mx-4 md:mx-0 px-4 md:px-0">
@@ -878,7 +901,7 @@ export default function AgriLinkDashboard() {
              <div className="w-full bg-neutral-50 dark:bg-neutral-900 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl md:rounded-3xl p-6 md:p-10 text-center shrink-0">
                 <LayoutGrid size={24} className="mx-auto text-neutral-200 dark:text-neutral-700 mb-2" />
                 <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{t.notTracked}</p>
-                <button onClick={() => setActiveTab('inventory')} className="text-[10px] font-black text-green-700 dark:text-green-400 mt-2 bg-white dark:bg-neutral-800 px-4 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700 shadow-sm">{t.addCrop}</button>
+                <button onClick={() => router.push('/crops')} className="text-[10px] font-black text-green-700 dark:text-green-400 mt-2 bg-white dark:bg-neutral-800 px-4 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-700 shadow-sm">{t.addCrop}</button>
              </div>
           )}
         </div>
@@ -913,7 +936,7 @@ export default function AgriLinkDashboard() {
       <section className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{t.activeBids}</h3>
-          <button onClick={() => setActiveTab('market')} className="text-[10px] font-black text-green-700 dark:text-green-400 hover:underline">{t.viewBids}</button>
+          <button onClick={() => router.push('/market/bids')} className="text-[10px] font-black text-green-700 dark:text-green-400 hover:underline">{t.viewBids}</button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {farmer.bids.slice(0, 2).map((bid) => (
@@ -1496,29 +1519,24 @@ export default function AgriLinkDashboard() {
             <div className="w-8 h-8 rounded bg-green-700 flex items-center justify-center text-white font-bold">A</div>
             <h1 className="text-xl font-bold tracking-tight text-green-900 dark:text-green-400">AgriLink</h1>
           </div>
-          {isSyncing ? (
-            <RefreshCw size={18} className="text-blue-500 animate-spin" />
-          ) : isOffline ? (
-            <WifiOff size={18} className="text-red-500" />
-          ) : (
-            <Wifi size={18} className="text-green-500" />
-          )}
+          {/* DISABLED: Offline sync indicator removed for stability */}
+          <Wifi size={18} className="text-green-500" />
         </div>
         
         <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
             {[
-              { id: "home", icon: Home, label: t.dashboard },
-              { id: "inventory", icon: LayoutGrid, label: t.myCrops },
-              { id: "market", icon: TrendingUp, label: t.marketExplorer },
-              { id: "weather", icon: ThermometerSun, label: t.weather },
-              { id: "scan", icon: Camera, label: t.aiQualityCheck },
-              { id: "logistics", icon: Truck, label: t.logistics },
-              { id: "library", icon: Book, label: t.resourceLibrary },
-              { id: "advisor", icon: MessageCircle, label: t.advisor },
+              { id: "home", icon: Home, label: t.dashboard, path: "/" },
+              { id: "inventory", icon: LayoutGrid, label: t.myCrops, path: "/crops" },
+              { id: "market", icon: TrendingUp, label: t.marketExplorer, path: "/market/bids" },
+              { id: "weather", icon: ThermometerSun, label: t.weather, path: "/weather" },
+              { id: "scan", icon: Camera, label: t.aiQualityCheck, path: "/ai/analyze" },
+              { id: "logistics", icon: Truck, label: t.logistics, path: "/logistics" },
+              { id: "library", icon: Book, label: t.resourceLibrary, path: "/library" },
+              { id: "advisor", icon: MessageCircle, label: t.advisor, path: "/ai/analyze" },
             ].map((item) => (
             <button 
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => router.push(item.path)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
                 activeTab === item.id 
                   ? "bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400" 
@@ -1559,25 +1577,23 @@ export default function AgriLinkDashboard() {
         {/* Mobile Header */}
         <header className="md:hidden bg-white dark:bg-neutral-900 px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-20 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-2">
-             <div onClick={() => setActiveTab('home')} className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer">A</div>
+             <div onClick={() => router.push('/')} className="w-8 h-8 rounded-lg bg-green-700 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer">A</div>
              <div>
-               <h1 onClick={() => setActiveTab('home')} className="text-lg font-black tracking-tight text-green-900 dark:text-green-400 leading-none cursor-pointer">AgriLink</h1>
+               <h1 onClick={() => router.push('/')} className="text-lg font-black tracking-tight text-green-900 dark:text-green-400 leading-none cursor-pointer">AgriLink</h1>
+               {/* DISABLED: Offline sync indicator removed for stability */}
                <div className="flex items-center gap-1 mt-0.5 text-[9px] text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-wider">
-                 {isSyncing ? (
-                   <RefreshCw size={8} className="text-blue-500 animate-spin" />
-                 ) : (
-                   isOffline ? <WifiOff size={8} className="text-red-500"/> : <Wifi size={8} className="text-green-500"/>
-                 )}
-                 {isSyncing ? (preferredLang === 'sw' ? 'Inasawazisha' : 'Syncing') : (isOffline ? (preferredLang === 'sw' ? 'Nje' : 'Offline') : (preferredLang === 'sw' ? 'Mhewani' : 'Online'))}
+                 <Wifi size={8} className="text-green-500"/>
+                 {preferredLang === 'sw' ? 'Mhewani' : 'Online'}
                </div>
              </div>
           </div>
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {offlineQueue.length > 0 && (
+            {/* DISABLED: Offline queue indicator removed for stability */}
+            {/* {offlineQueue.length > 0 && (
               <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[9px] px-1.5 py-0.5 rounded-md font-black border border-amber-200 dark:border-amber-800 animate-pulse shrink-0">
                 {offlineQueue.length}
               </span>
-            )}
+            )} */}
             <div className="scale-90">
               <ThemeToggle />
             </div>
@@ -1593,7 +1609,6 @@ export default function AgriLinkDashboard() {
             </button>
             <HamburgerNav 
               activeTab={activeTab} 
-              setActiveTab={setActiveTab} 
               t={t} 
               farmerName={`${farmer.firstName} ${farmer.lastName}`} 
             />
@@ -1609,14 +1624,15 @@ export default function AgriLinkDashboard() {
             </span>
           </h2>
           <div className="flex items-center gap-4">
-             {offlineQueue.length > 0 && (
+             {/* DISABLED: Offline queue badge removed for stability */}
+             {/* {offlineQueue.length > 0 && (
                <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-full border border-amber-100 dark:border-amber-800 shadow-sm animate-in fade-in slide-in-from-right-4">
                  <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
                  <span className="text-xs font-bold whitespace-nowrap">
                    {offlineQueue.length} {preferredLang === 'sw' ? 'Zinasubiri' : 'Pending Sync'}
                  </span>
                </div>
-             )}
+             )} */}
              <div className="relative">
                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                <input 

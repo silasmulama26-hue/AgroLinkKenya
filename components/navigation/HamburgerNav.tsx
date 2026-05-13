@@ -1,37 +1,39 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Menu, Home, TrendingUp, ThermometerSun, Camera, Truck, Book, MessageCircle, User } from 'lucide-react';
+import { X, Menu, Home, TrendingUp, ThermometerSun, Camera, Truck, Book, MessageCircle, User, Sprout } from 'lucide-react';
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ElementType;
+  path: string;
 }
 
 export default function HamburgerNav({ 
   activeTab, 
-  setActiveTab, 
   t,
   farmerName
 }: { 
   activeTab: string; 
-  setActiveTab: (tab: string) => void; 
   t: any;
   farmerName: string
 }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems: NavItem[] = [
-    { id: "home", label: t.home, icon: Home },
-    { id: "market", label: t.market, icon: TrendingUp },
-    { id: "weather", label: t.weather, icon: ThermometerSun },
-    { id: "scan", label: t.scan, icon: Camera },
-    { id: "logistics", label: t.logistics, icon: Truck },
-    { id: "library", label: t.resourceLibrary, icon: Book },
-    { id: "advisor", label: t.advisor, icon: MessageCircle },
-    { id: "profile", label: t.profileSettings, icon: User },
+    { id: "home", label: t.home, icon: Home, path: "/" },
+    { id: "crops", label: "My Crops", icon: Sprout, path: "/crops" },
+    { id: "market", label: t.market, icon: TrendingUp, path: "/market/bids" },
+    { id: "weather", label: t.weather, icon: ThermometerSun, path: "/weather" },
+    { id: "scan", label: t.scan, icon: Camera, path: "/ai/analyze" },
+    { id: "logistics", label: t.logistics, icon: Truck, path: "/logistics" },
+    { id: "library", label: t.resourceLibrary, icon: Book, path: "/library" },
+    { id: "advisor", label: t.advisor, icon: MessageCircle, path: "/ai/analyze" },
+    { id: "profile", label: t.profileSettings, icon: User, path: "/profile" },
   ];
 
   return (
@@ -71,7 +73,7 @@ export default function HamburgerNav({
                 {navItems.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => { setActiveTab(item.id); setIsOpen(false); }}
+                    onClick={() => { router.push(item.path); setIsOpen(false); }}
                     className={`flex items-center gap-4 p-4 rounded-2xl transition-colors ${activeTab === item.id ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
                   >
                     <item.icon size={20} />

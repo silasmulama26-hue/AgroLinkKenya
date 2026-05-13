@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  // Allow development access from LAN IPs to prevent cross-origin warnings
+  allowedDevOrigins: ['localhost', '192.168.*', '10.*', '172.*'],
   // Allow access to remote image placeholder.
   images: {
     remotePatterns: [
